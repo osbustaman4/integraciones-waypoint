@@ -1,27 +1,13 @@
 
 import logging
 import os
-import platform
 import traceback
-import subprocess
-
-from app_config import DATABASES
-from decouple import config as config_environment
 
 class Logger():
 
-    def __set_logger(self, client):
-        log_directory = config_environment('LOG_DIRECTORY')
+    def __set_logger(self, client, log_directory):
+        # log_directory = config_environment('LOG_DIRECTORY')
         log_filename = f'{client}.log'
-
-        # Obtener el nombre del sistema operativo
-        operating_system = platform.system()
-        if operating_system == "Linux":
-            # Comando para cambiar los permisos
-            chmod_command = f"sudo chmod -R u+rwx {log_directory}"
-
-            # Ejecutar el comando en la terminal
-            subprocess.run(chmod_command, shell=True)
 
         logger = logging.getLogger(__name__)
         logger.setLevel(logging.DEBUG)
@@ -41,9 +27,9 @@ class Logger():
         return logger
 
     @classmethod
-    def add_to_log(self, level, message, client='log'):
+    def add_to_log(self, level, message, log_directory, client='log'):
         try:
-            logger = self.__set_logger(self, client)
+            logger = self.__set_logger(self, client, log_directory)
 
             if (level == "critical"):
                 logger.critical(message)
