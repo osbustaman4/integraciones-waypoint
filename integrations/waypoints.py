@@ -9,7 +9,7 @@ from integrations.models import (
     , response_gs_objects
     , get_data_integraciones_sinc
 )
-from lib.Stech import Logger
+from lib.Stech import Logger, Stech
 from sqlalchemy import text
 from sqlalchemy.exc import SQLAlchemyError
 
@@ -27,19 +27,18 @@ class Waypoint():
             if not query_results:
                 raise ValueError("Error al obtener los datos de la consulta")
 
-            for query in query_results:
+            for query in Stech.object_to_json(query_results):
+                if query['nsat'] > 3:
 
-                if query.nsat > 3:
-                    
                     payload = [
                                 {
-                                    "fecha": query.fecha,
-                                    "latitud": query.latitud,
-                                    "longitud": query.longitud,
-                                    "altitud": query.altitud,
-                                    "velocidad": query.velocidad,
-                                    "cog": query.cog,
-                                    "nsat": query.nsat,
+                                    "fecha": query['fecha'],
+                                    "latitud": query['latitud'],
+                                    "longitud": query['longitud'],
+                                    "altitud": query['altitud'],
+                                    "velocidad": query['velocidad'],
+                                    "cog": query['cog'],
+                                    "nsat": query['nsat'],
                                     "realtime": True,
                                     "input": [
                                         0,
@@ -61,7 +60,7 @@ class Waypoint():
                                     "panico": 0,
                                     "bateria": 0.0,
                                     "bateriaInt": 0.0,
-                                    "patente": query.patente,
+                                    "patente": query['patente'],
                                     "tercerojo": 0,
                                     "aceleracion": 0,
                                     "frenada": 0,
@@ -83,31 +82,31 @@ class Waypoint():
                         code_response = json.loads(response.json())
                         if int(code_response["code"]) == 0:
                             
-                            query_exist = get_data_integraciones_sinc(query.imei)
+                            query_exist = get_data_integraciones_sinc(query['imei'])
 
                             data_integraciones_sinc = {
                                 "sinc_integ": load_data('INTEGRATION_NAME'),
-                                "sinc_imei": query.imei,
-                                "sinc_dt_tracker": query.fecha_tracker,
-                                "sinc_dt_server": query.dt_server,
-                                "sinc_params": query.params,
-                                "sinc_lat": query.latitud,
-                                "sinc_lng": query.longitud,
-                                "sinc_speed": query.velocidad,
-                                "sinc_angle": query.angle,
-                                "sinc_plate": query.patente,
+                                "sinc_imei": query['imei'],
+                                "sinc_dt_tracker": query['fecha_tracker'],
+                                "sinc_dt_server": query['dt_server'],
+                                "sinc_params": query['params'],
+                                "sinc_lat": query['latitud'],
+                                "sinc_lng": query['longitud'],
+                                "sinc_speed": query['velocidad'],
+                                "sinc_angle": query['angle'],
+                                "sinc_plate": query['patente'],
                                 "idpoint": 0
                             }
 
                             if query_exist.rowcount == 0:
                                 insert_integraciones_sinc(data_integraciones_sinc)
-                                Logger.add_to_log("success", f"insert: {query.patente}", load_data('LOG_DIRECTORY'), "log_waypoint")
+                                Logger.add_to_log("success", f"insert: {query['patente']}", load_data('LOG_DIRECTORY'), "log_waypoint")
 
                             else:
                                 update_integraciones_sinc(data_integraciones_sinc)
-                                Logger.add_to_log("success", f"update: {query.patente}", load_data('LOG_DIRECTORY'), "log_waypoint")
+                                Logger.add_to_log("success", f"update: {query['patente']}", load_data('LOG_DIRECTORY'), "log_waypoint")
 
-                            Logger.add_to_log("success", f"punto enviado: {query.patente}", load_data('LOG_DIRECTORY'), "log_waypoint")
+                            Logger.add_to_log("success", f"punto enviado: {query['patente']}", load_data('LOG_DIRECTORY'), "log_waypoint")
                         else:
 
                             error_integracion = response.json()
