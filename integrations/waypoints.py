@@ -23,7 +23,7 @@ class Waypoint():
             if not data_timezone:
                 raise ValueError("Error al obtener la zona horaria")
 
-            query_results = response_gs_objects(data_timezone, 1)
+            query_results = response_gs_objects(data_timezone, load_data('USER_ID'))
             if not query_results:
                 raise ValueError("Error al obtener los datos de la consulta")
 
