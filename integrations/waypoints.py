@@ -32,7 +32,7 @@ class Waypoint():
 
                     payload = [
                                 {
-                                    "fecha": query['fecha'],
+                                    "fecha": int(f"{query['fecha']}000"),
                                     "latitud": query['latitud'],
                                     "longitud": query['longitud'],
                                     "altitud": query['altitud'],
