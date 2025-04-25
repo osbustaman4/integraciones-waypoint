@@ -1,5 +1,6 @@
 from app_config import configure
-from integrations.controller import integration_wp_01
+
+from integrations.controller import integration_controller
 from src import init_app
 from apscheduler.schedulers.background import BackgroundScheduler
 
@@ -10,9 +11,9 @@ app = init_app(configuration)
 application = app
 
 task = BackgroundScheduler()
-task.add_job(integration_wp_01, 'interval', seconds=10) 
+task.add_job(integration_controller, 'interval', seconds=10) 
 task.start()
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5010)
+    app.run(host='0.0.0.0', port=5000)

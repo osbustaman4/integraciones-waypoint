@@ -1,9 +1,8 @@
 import traceback
-from integrations.waypoints import Waypoint
-
-def integration_wp_01():
+from integrations.integration import Integration
+def integration_controller():
     try:
-        Waypoint.integration_wp_01()
+        Integration.get_points()
     except Exception as e:
         print(f"Error: {e}")
 

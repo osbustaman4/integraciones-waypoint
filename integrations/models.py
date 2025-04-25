@@ -3,6 +3,7 @@ from decouple import config as load_data
 from sqlalchemy import text
 from lib.Stech import Stech
 from lib.Connection import Connection
+from datetime import datetime, timezone, timedelta
 
 
 def get_data_integraciones_sinc(imei):
@@ -26,23 +27,19 @@ def get_data_integraciones_sinc(imei):
 def response_gs_objects(time_zone, id_user):
     try:
         session = Connection.get_session(load_data('ENVIRONMENTS'))
+        lst_objects = []
 
         query_string = f"""
                 SELECT
-                    UNIX_TIMESTAMP(DATE_SUB(obj.dt_tracker, INTERVAL {time_zone})) AS fecha,
-                    obj.lat AS latitud,
-                    obj.lng AS longitud,
-                    obj.altitude AS altitud,
-                    obj.angle AS cog,
-                    obj.speed AS velocidad,
-                    obj.satelites AS nsat,
-                    obj.plate_number AS patente,
-                    obj.imei,
-                    obj.dt_server,
-                    DATE_SUB(obj.dt_tracker, INTERVAL -4 HOUR) AS fecha_tracker,
-                    obj.angle,
-                    obj.params
-
+                    obj.lat AS latitude,
+                    obj.lng AS longitude,
+                    obj.altitude AS altitude,
+                    obj.plate_number AS vehicleCode,
+                    obj.odometer AS odometer,
+                    Null AS driverCode,
+                    UNIX_TIMESTAMP(DATE_SUB(obj.dt_tracker, INTERVAL {time_zone})) AS start,
+                    obj.speed,
+                    CONCAT('";FYS;"') AS tags
                 FROM
                     gs_objects obj
                     JOIN gs_user_objects u_obj ON u_obj.imei = obj.imei
@@ -53,7 +50,21 @@ def response_gs_objects(time_zone, id_user):
 
         # Ejecuta la consulta
         query_results = session.execute(text(query_string)).fetchall()
-        return query_results
+        lst_objects = [
+            {
+                "latitude": result.latitude,
+                "longitude": result.longitude,
+                "altitude": result.altitude,
+                "vehicleCode": str(result.vehicleCode),
+                "odometer": result.odometer,
+                "driverCode": result.driverCode,
+                "start": datetime.fromtimestamp(result.start, tz=timezone.utc).strftime('%Y-%m-%d %H:%M:%S'),
+                "speed": result.speed,
+                "tags": result.tags
+            }
+            for result in query_results
+        ]
+        return lst_objects
     
     except Exception as e:
         return str(e)

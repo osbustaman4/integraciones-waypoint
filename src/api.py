@@ -1,5 +1,7 @@
 import traceback
-from flask import jsonify, Blueprint
+import requests
+import json
+from flask import jsonify, Blueprint, request
 from lib.Stech import Logger
 
 main_ejemplo = Blueprint('main_ejemplo', __name__)
@@ -10,5 +12,5 @@ def ejemplo():
         return jsonify({'message': 'Hello World', 'success': True}), 200
     
     except Exception as e:
-        Logger.error(traceback.format_exc())
+        Logger.error(traceback.format_exc()) 
         return jsonify({'message': 'Error en el servidor', 'success': False}), 500
